@@ -63,13 +63,16 @@ def sign_ed25519(payload: dict, did: str, seed: str):
     # Create an ed25519 from the seed
     key_ed25519 = Ed25519PrivateKey.from_private_bytes(bytearray.fromhex(seed))
 
-    # Create the JWS token from the payload
-    jws = JsonWebSignature()
-
     # Sign the payload
+    jws = JsonWebSignature()
     protected = {"alg": "EdDSA", "kid": did + "#" + did.split(":")[-1]}
     signature = jws.serialize_compact(protected, payload_b64decoded, key_ed25519)
-    signature_data = {k: v for k, v in zip(("protected", "payload", "signature"), signature.decode("utf-8").split("."))}
+    signature_data = {
+        k: v
+        for k, v in zip(
+            ("protected", "payload", "signature"), signature.decode("utf-8").split(".")
+        )
+    }
 
     return json.dumps(signature_data, sort_keys=True)
 
