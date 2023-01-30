@@ -3,11 +3,9 @@ import hashlib
 import json
 import os
 import jsonpatch
-from jwcrypto import jwk, jws
+from authlib.jose import JsonWebSignature
 from multiformats import CID
-from base64 import urlsafe_b64encode, b64encode, b64decode
-from jwcrypto.common import json_encode, base64url_encode, base64url_decode
-from cryptography.hazmat.primitives import serialization
+from base64 import urlsafe_b64encode, urlsafe_b64decode, b64encode, b64decode
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey
 )
@@ -60,55 +58,20 @@ def get_unique_string() -> str:
 def sign_ed25519(payload: dict, did: str, seed: str):
     """Sign a payload using EdDSA (ed25519)"""
 
-    payload_b64decoded = base64url_decode(payload)
+    payload_b64decoded = urlsafe_b64decode(payload)
 
     # Create an ed25519 from the seed
     key_ed25519 = Ed25519PrivateKey.from_private_bytes(bytearray.fromhex(seed))
 
-    # Derive the public and private keys
-    # private key
-    d = base64url_encode(
-        key_ed25519.private_bytes(
-            serialization.Encoding.Raw,
-            serialization.PrivateFormat.Raw,
-            serialization.NoEncryption()
-        )
-    )
-
-    # public key
-    x = base64url_encode(
-        key_ed25519.public_key().public_bytes(
-            serialization.Encoding.Raw,
-            serialization.PublicFormat.Raw
-        )
-    )
-
-    # Create a JWK key compatible with the jwcrypto library
-    # https://jwcrypto.readthedocs.io/en/latest/jwk.html#classes
-    # To create a random key: key = jwk.JWK.generate(kty='OKP', size=256, crv='Ed25519')
-    key = jwk.JWK(
-        **{
-            "crv":"Ed25519",
-            "d": d, # private key
-            "kty":"OKP",
-            "size":256,
-            "x": x,  # public key
-        }
-    )
-
     # Create the JWS token from the payload
-    jwstoken = jws.JWS(payload_b64decoded)
+    jws = JsonWebSignature()
 
     # Sign the payload
-    # https://github.com/latchset/jwcrypto/blob/fcdc7d76b5a5924f9343a92b2627944a855ae62a/jwcrypto/jws.py#L477
-    jwstoken.add_signature(
-        key=key,
-        alg=None,
-        protected=json_encode({"alg": "EdDSA", "kid": did + "#" + did.split(":")[-1]}),
-    )
+    protected = {"alg": "EdDSA", "kid": did + "#" + did.split(":")[-1]}
+    signature = jws.serialize_compact(protected, payload_b64decoded, key_ed25519)
+    signature_data = {k: v for k, v in zip(("protected", "payload", "signature"), signature.decode("utf-8").split("."))}
 
-    signature_data = jwstoken.serialize()
-    return signature_data
+    return json.dumps(signature_data, sort_keys=True)
 
 
 def build_data_from_commits(commits):
