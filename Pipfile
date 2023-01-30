@@ -9,9 +9,9 @@ name = "pypi"
 
 [dev-packages]
 # we fix exact versions as it's sufficient to have at least one set of compatible dependencies for development
+Authlib = "==1.2.0"
 dag-cbor = "==0.2.2"
 jsonpatch = "==1.32"
-jwcrypto = "==1.4.2"
 multiformats = "==0.1.4.post3"
 requests = "==2.28.2"
 
