@@ -91,6 +91,8 @@ def build_data_from_commits(commits):
         decoded_block = decode_linked_block(linked_block)
         if "data" in decoded_block:
             patches.append(decoded_block["data"])
+        else:
+            patches.append({})
 
     # Apply the patches sequentially
     if not patches:
