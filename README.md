@@ -1,4 +1,5 @@
-# ceramic-python-client
+# Python client for ceramic
+
 A simple Ceramic Network client written in Python.
 
 This Ceramic client implements the payload building, encoding and signing needed to interact with the [Ceramic Network](https://ceramic.network/).

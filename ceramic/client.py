@@ -1,5 +1,7 @@
 import requests
-from client.payloads import build_genesis_payload, build_commit_payload, build_data_from_commits
+
+from ceramic.payloads import (build_commit_payload, build_data_from_commits,
+                              build_genesis_payload)
 
 HTTP_OK = 200
 

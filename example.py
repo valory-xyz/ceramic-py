@@ -1,4 +1,4 @@
-from client.ceramic import Ceramic
+from ceramic.client import Ceramic
 
 # Optionally, generate a DID using some DID library.
 # Ceramic provides the Glaze suite, which can be used for this purpose running: glaze did:create
