@@ -1,6 +1,6 @@
 """Specifies the metadata for ceramic client."""
 
-__title__ = "ceramic-python"
+__title__ = "ceramic-py"
 __description__ = "Python client for ceramic streams."
 __url__ = "https://github.com/valory-xyz/ceramic-python-client.git"
 __version__ = "0.1.0"
