@@ -57,3 +57,8 @@ new_env: clean
 	else\
 		echo "In a virtual environment! Exit first: 'exit'.";\
 	fi
+
+.PHONY: dist
+dist: clean
+	python setup.py sdist
+	python setup.py bdist_wheel

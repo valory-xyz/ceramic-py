@@ -1,30 +1,77 @@
-# Python client for ceramic
-
-A simple Ceramic Network client written in Python.
+# Ceramic Py - Python client for ceramic streams
 
 This Ceramic client implements the payload building, encoding and signing needed to interact with the [Ceramic Network](https://ceramic.network/).
 
-# Run the example
+## Working with Ceramic streams
 
-The example in this repository creates a new stream in a remote Ceramic node. This stream is initialized with the following data: `{"hello": "world"}`. It then retrieves the data, submits an update request to change that data to `{"foo": "baz"}` and retrieves the data again to prove that the update was successful.
+### Install the ceramic client using pip
 
-> Note: the Ceramic node used in this examples should be used for testing purposes only. All the data pinned to that node is wiped periodically.
+```
+pip3 install ceramic-py
+```
 
-* Install [pipenv](https://pipenv.pypa.io/en/latest/).
+### Create a stream
+
+Generate a [decentraliced identifier (DID)](https://www.w3.org/TR/did-core/#:~:text=Decentralized%20identifiers%20(DIDs)%20are%20a,the%20controller%20of%20the%20DID) using a DID library. Ceramic provides the [Glaze suite](https://github.com/ceramicstudio/js-glaze), which can be used for generating DIDs.
+
+```python
+from ceramic.client import Ceramic
+
+# Dummy DID
+did = "did:key:z6Mkon3Necd6NkkyfoGoHxid2znGc59LU3K7mubaRcFbLfLX"
+did_seed = "0101010101010101010101010101010101010101010101010101010101010101"
+
+# Instantiate the client
+ceramic = Ceramic(<CERAMIC_NODE_URL>)
+
+# Create a new stream
+initial_data = { "hello": 'world'}
+stream_id = ceramic.create_stream(did, did_seed, initial_data)
+print(f"Stream creates with ID: {stream_id}")
+```
+### Read stream
+
+```python
+from ceramic.client import Ceramic
+
+# Dummy DID
+did = "did:key:z6Mkon3Necd6NkkyfoGoHxid2znGc59LU3K7mubaRcFbLfLX"
+did_seed = "0101010101010101010101010101010101010101010101010101010101010101"
+
+# Instantiate the client
+ceramic = Ceramic(<CERAMIC_NODE_URL>)
+
+# Get the data
+data, _, _ = ceramic.get_data(<STREAM_ID>)
+print(f"Data from stream: {data}")
+```
+
+### Update stream
+
+```python
+from ceramic.client import Ceramic
+
+# Dummy DID
+did = "did:key:z6Mkon3Necd6NkkyfoGoHxid2znGc59LU3K7mubaRcFbLfLX"
+did_seed = "0101010101010101010101010101010101010101010101010101010101010101"
+
+# Add a new update commit
+new_data = {"foo": "baz"}
+ceramic.update_stream(did, did_seed, <STREAM_ID>, new_data)
+
+# Get the data again
+data, _, _ = ceramic.get_data(<STREAM_ID>)
+print(f"Updated data: {data}")
+```
+
+## For Developement
+
+* Clone this repository 
+    ```
+    git clone git@github.com:valory-xyz/ceramic-py.git
+    ```
+* Install [Pipenv](https://pipenv.pypa.io/en/latest/).
 * Generate the virtual environment:
-
     ```
-    make new_env
-    ```
-* Run the example:
-    ```
-    python example.py
-    ```
-    You should see an output similar to the following:
-
-    ```
-    Created stream kjzl6cwe1jw147sv2ak3kksfgs14gc3jgjhu3mfnwn534l89joxi2tulv0ci14k
-    Current data is {'hello': 'world'}
-    Updated stream kjzl6cwe1jw147sv2ak3kksfgs14gc3jgjhu3mfnwn534l89joxi2tulv0ci14k
-    Current data is {'foo': 'baz'}
+    make new_env && pipenv shell
     ```
