@@ -2,7 +2,7 @@
 
 This Ceramic client implements the payload building, encoding and signing needed to interact with the [Ceramic Network](https://ceramic.network/).
 
-## Working with the streams
+## Working with Ceramic streams
 
 ### Install the ceramic client using pip
 
@@ -12,7 +12,7 @@ pip3 install ceramic-py
 
 ### Create a stream
 
-Generate a DID using a DID library. Ceramic provides the [Glaze suite](https://github.com/ceramicstudio/js-glaze), which can be used for generating DIDs.
+Generate a [decentraliced identifier (DID)](https://www.w3.org/TR/did-core/#:~:text=Decentralized%20identifiers%20(DIDs)%20are%20a,the%20controller%20of%20the%20DID) using a DID library. Ceramic provides the [Glaze suite](https://github.com/ceramicstudio/js-glaze), which can be used for generating DIDs.
 
 ```python
 from ceramic.client import Ceramic
@@ -29,7 +29,7 @@ initial_data = { "hello": 'world'}
 stream_id = ceramic.create_stream(did, did_seed, initial_data)
 print(f"Stream creates with ID: {stream_id}")
 ```
-### Read from stream
+### Read stream
 
 ```python
 from ceramic.client import Ceramic
@@ -66,11 +66,11 @@ print(f"Updated data: {data}")
 
 ## For Developement
 
-* Clone the git repository 
+* Clone this repository 
     ```
     git clone git@github.com:valory-xyz/ceramic-py.git
     ```
-* Install [pipenv](https://pipenv.pypa.io/en/latest/).
+* Install [Pipenv](https://pipenv.pypa.io/en/latest/).
 * Generate the virtual environment:
     ```
     make new_env && pipenv shell
