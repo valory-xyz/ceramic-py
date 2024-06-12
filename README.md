@@ -1,6 +1,6 @@
 # Ceramic Py - Python client for ceramic streams
 
-This Ceramic client implements the payload building, encoding and signing needed to interact with the [Ceramic Network](https://ceramic.network/).
+This Ceramic client implements the payload building, encoding and signing needed to interact with the [Ceramic Network](https://ceramic.network/). It currently supports TileDocuments only.
 
 ## Working with Ceramic streams
 
@@ -25,9 +25,9 @@ did_seed = "0101010101010101010101010101010101010101010101010101010101010101"
 ceramic = Ceramic(<CERAMIC_NODE_URL>)
 
 # Create a new stream
-initial_data = { "hello": 'world'}
+initial_data = { "hello": "world"}
 stream_id = ceramic.create_stream(did, did_seed, initial_data)
-print(f"Stream creates with ID: {stream_id}")
+print(f"Stream created with ID: {stream_id}")
 ```
 ### Read stream
 
@@ -66,7 +66,7 @@ print(f"Updated data: {data}")
 
 ## For Developement
 
-* Clone this repository 
+* Clone this repository
     ```
     git clone git@github.com:valory-xyz/ceramic-py.git
     ```

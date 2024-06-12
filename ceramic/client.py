@@ -69,14 +69,14 @@ class Ceramic:
         # Rebuild the current data
         return build_data_from_commits(data["commits"]), genesis_cid_str, previous_cid_str
 
-    def create_stream(self, did: str, did_seed: str, data: dict) -> str:
+    def create_stream(self, did: str, did_seed: str, data: dict, extra_metadata: dict = {}) -> str:
         # Prepare the genesis payload
-        genesis_payload = build_genesis_payload(did, did_seed, data)
+        genesis_payload = build_genesis_payload(did, did_seed, data, extra_metadata)
 
         # Create a new stream
         code, data = self._request_create_stream(genesis_payload=genesis_payload)
         if code != HTTP_OK or not data:
-            print("Error creating stream: {data}")
+            print(f"Error creating stream: {data}")
 
         print(f"Created stream {data['streamId']}")
         return data['streamId']
