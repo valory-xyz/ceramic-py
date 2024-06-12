@@ -1,14 +1,17 @@
 import dag_cbor
 import hashlib
 import json
-import os
-import jsonpatch
-from authlib.jose import JsonWebSignature
+from base64 import urlsafe_b64encode, b64encode, b64decode
+from jwcrypto import jwk, jws
+from jwcrypto.common import json_encode
 from multiformats import CID
-from base64 import urlsafe_b64encode, urlsafe_b64decode, b64encode, b64decode
+from jwcrypto.common import json_encode, base64url_encode, base64url_decode
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey
 )
+from cryptography.hazmat.primitives import serialization
+import os
+import jsonpatch
 
 DAG_CBOR_CODEC_CODE = 113
 SHA2_256_CODE = 18
@@ -58,29 +61,62 @@ def get_unique_string() -> str:
 def sign_ed25519(payload: dict, did: str, seed: str):
     """Sign a payload using EdDSA (ed25519)"""
 
-    payload_b64decoded = urlsafe_b64decode(payload)
+    payload_b64decoded = base64url_decode(payload)
 
     # Create an ed25519 from the seed
     key_ed25519 = Ed25519PrivateKey.from_private_bytes(bytearray.fromhex(seed))
 
-    # Sign the payload
-    jws = JsonWebSignature()
-    protected = {"alg": "EdDSA", "kid": did + "#" + did.split(":")[-1]}
-    signature = jws.serialize_compact(protected, payload_b64decoded, key_ed25519)
-    signature_data = {
-        k: v
-        for k, v in zip(
-            ("protected", "payload", "signature"), signature.decode("utf-8").split(".")
+    # Derive the public and private keys
+    # private key
+    d = base64url_encode(
+        key_ed25519.private_bytes(
+            serialization.Encoding.Raw,
+            serialization.PrivateFormat.Raw,
+            serialization.NoEncryption()
         )
-    }
+    )
 
-    return json.dumps(signature_data, sort_keys=True)
+    # public key
+    x = base64url_encode(
+        key_ed25519.public_key().public_bytes(
+            serialization.Encoding.Raw,
+            serialization.PublicFormat.Raw
+        )
+    )
+
+    # Create a JWK key compatible with the jwcrypto library
+    # https://jwcrypto.readthedocs.io/en/latest/jwk.html#classes
+    # To create a random key: key = jwk.JWK.generate(kty='OKP', size=256, crv='Ed25519')
+    key = jwk.JWK(
+        **{
+            "crv":"Ed25519",
+            "d": d, # private key
+            "kty":"OKP",
+            "size":256,
+            "x": x,  # public key
+        }
+    )
+
+    # Create the JWS token from the payload
+    jwstoken = jws.JWS(payload_b64decoded)
+
+    # Sign the payload
+    # https://github.com/latchset/jwcrypto/blob/fcdc7d76b5a5924f9343a92b2627944a855ae62a/jwcrypto/jws.py#L477
+    jwstoken.add_signature(
+        key=key,
+        alg=None,
+        protected=json_encode({"alg": "EdDSA", "kid": did + "#" + did.split(":")[-1]}),
+    )
+
+    signature_data = jwstoken.serialize()
+    return signature_data
 
 
 def build_data_from_commits(commits):
 
     # Iterate over the commits and get the data diffs
     patches = []
+
     for commit in commits:
         # Skip anchor commits
         if "linkedBlock" not in commit["value"].keys():
@@ -155,12 +191,13 @@ def encode_and_sign_payload(payload: dict, did: str, did_seed: str) -> dict:
 
     return linked_block, link, payload_cid.decode("utf-8"), signature_data
 
-def build_genesis_payload(did, did_seed, data):
+def build_genesis_payload(did, did_seed, data, extra_metadata):
 
     genesis_data = {
         "header":{
             "controllers":[did],
-            "unique": get_unique_string()
+            "unique": get_unique_string(),
+            **extra_metadata
         },
     }
 
